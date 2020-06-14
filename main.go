@@ -11,7 +11,7 @@ import (
 func main() {
 
 	ctx := context.Background()
-	tim := tenantipmanager.NewTenantIpManager (ctx, tenantipmanager.MT_IP_PREFIX)
+	tim := tenantipmanager.GetTenantIpManager(ctx, tenantipmanager.MT_IP_PREFIX)
 
 	devip := "200.1.1.2"
 
@@ -20,7 +20,7 @@ func main() {
 
 		tntid := fmt.Sprintf("%d", j)
 
-		for i := 1; i < 256*100; i++ {
+		for i := 1; i < 256*10; i++ {
 			devid := fmt.Sprintf("%d", i)
 			if _, err := tim.AllocateIP(ctx, tntid, devid, devip); err != nil {
 				fmt.Println(err)

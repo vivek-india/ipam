@@ -4,6 +4,7 @@ import (
     "context"
     "fmt"
 	"errors"
+	"sync"
     //goipam "github.com/metal-stack/go-ipam"
 	goipam "github.com/VeenaSL/go-ipam"
 )
@@ -61,7 +62,19 @@ type TenantIpManager struct {
 	tntMap map[string]*Tenant		//Key is tntid
 }
 
-func NewTenantIpManager(ctx context.Context, prefix string) *TenantIpManager {
+var timObj *TenantIpManager
+var once sync.Once
+
+func GetTenantIpManager(ctx context.Context, prefix string) *TenantIpManager {
+
+	once.Do(func() {
+		timObj = newTenantIpManager(ctx, prefix)
+	})
+	return timObj
+
+}
+
+func newTenantIpManager(ctx context.Context, prefix string) *TenantIpManager {
 
 	ipam := goipam.New()
     ph, err := ipam.NewPrefix(prefix)
