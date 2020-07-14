@@ -57,6 +57,7 @@ type Tenant struct {
 type TenantIpManager struct {
 
 	ipam goipam.Ipamer
+	storage goipam.Storage
 	prefixVal string
 	prefix *goipam.Prefix
 	tntMap map[string]*Tenant		//Key is tntid
@@ -76,7 +77,12 @@ func GetTenantIpManager(ctx context.Context, prefix string) *TenantIpManager {
 
 func newTenantIpManager(ctx context.Context, prefix string) *TenantIpManager {
 
-	ipam := goipam.New()
+	if prefix == "" {
+		prefix = MT_IP_PREFIX
+	}
+
+	storage := goipam.NewMemory()
+	ipam := goipam.NewWithStorage(storage)
     ph, err := ipam.NewPrefix(prefix)
     if err != nil {
 		fmt.Println(err)
@@ -85,16 +91,12 @@ func newTenantIpManager(ctx context.Context, prefix string) *TenantIpManager {
 
 	ret := &TenantIpManager {
 
+		prefixVal: MT_IP_PREFIX,
 		ipam: ipam,
+		storage: storage,
 		prefix: ph,
 		tntMap:  make(map[string]*Tenant),
 	}
-	if prefix == "" {
-		ret.prefixVal = MT_IP_PREFIX
-	} else {
-		ret.prefixVal = prefix
-	}
-
 
 	return ret
 }
@@ -139,7 +141,12 @@ func (tim *TenantIpManager)AllocateIP(ctx context.Context,
 		return dev, nil
 	}
 
+	//prefix *goipam.Prefix
+	tim.prefix.PrintPrefix()
     ip, err := tim.ipam.AcquireIP(tim.prefix.Cidr)
+    fmt.Printf("---------------\n")
+    fmt.Printf("%+v\n", tim.storage)
+    fmt.Printf("---------------\n")
     if err != nil {
         return nil, err
     }
